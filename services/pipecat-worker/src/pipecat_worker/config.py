@@ -9,6 +9,8 @@ REQUIRED = [
     "PROVIDER_KEY_DEEPGRAM",
     "PROVIDER_KEY_OPENAI",
     "PROVIDER_KEY_CARTESIA",
+    "TWILIO_ACCOUNT_SID",
+    "TWILIO_AUTH_TOKEN",
 ]
 
 
@@ -18,6 +20,8 @@ class Config:
     supabase_service_role_key: str
     internal_svc_token: str
     provider_keys: dict[str, str]
+    twilio_account_sid: str
+    twilio_auth_token: str
     host: str
     port: int
 
@@ -35,6 +39,8 @@ class Config:
                 "openai": os.environ["PROVIDER_KEY_OPENAI"],
                 "cartesia": os.environ["PROVIDER_KEY_CARTESIA"],
             },
+            twilio_account_sid=os.environ["TWILIO_ACCOUNT_SID"],
+            twilio_auth_token=os.environ["TWILIO_AUTH_TOKEN"],
             host=os.environ.get("HOST", "0.0.0.0"),
             port=int(os.environ.get("PORT", "8080")),
         )

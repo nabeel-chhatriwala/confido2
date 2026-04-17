@@ -100,6 +100,8 @@ async def handle_ws(ws: WebSocket, cfg: Config) -> None:
     serializer = TwilioFrameSerializer(
         stream_sid=stream_sid,
         call_sid=call_sid_from_twilio,
+        account_sid=cfg.twilio_account_sid,
+        auth_token=cfg.twilio_auth_token,
     )
     transport = FastAPIWebsocketTransport(
         websocket=ws,
