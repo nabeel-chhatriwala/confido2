@@ -15,7 +15,8 @@
     "build": "tsc -p .",
     "test": "vitest run",
     "lint": "eslint src",
-    "typecheck": "tsc --noEmit -p ."
+    "typecheck": "tsc --noEmit -p .",
+    "types:gen": "../../scripts/db-types-gen.sh"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.47.0",
