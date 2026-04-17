@@ -1,8 +1,0 @@
-pyproject.toml
-src/pipecat_worker/__init__.py
-src/pipecat_worker.egg-info/PKG-INFO
-src/pipecat_worker.egg-info/SOURCES.txt
-src/pipecat_worker.egg-info/dependency_links.txt
-src/pipecat_worker.egg-info/requires.txt
-src/pipecat_worker.egg-info/top_level.txt
-tests/test_smoke.py
