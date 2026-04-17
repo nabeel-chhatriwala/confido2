@@ -1,0 +1,28 @@
+{
+  "name": "@confido/shared",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js",
+    "./schemas": "./dist/schemas/index.js",
+    "./db": "./dist/db/client.js",
+    "./session-token": "./dist/session-token.js"
+  },
+  "scripts": {
+    "build": "tsc -p .",
+    "test": "vitest run",
+    "lint": "eslint src",
+    "typecheck": "tsc --noEmit -p ."
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.47.0",
+    "zod": "^3.23.8"
+  },
+  "devDependencies": {
+    "vitest": "^2.1.0",
+    "typescript": "^5.6.0"
+  }
+}
