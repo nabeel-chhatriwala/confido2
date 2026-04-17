@@ -1,2 +1,14 @@
 .superpowers/
+.env
+.env.local
+node_modules/
+dist/
+.turbo/
+coverage/
+*.log
+.supabase/
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
 .DS_Store
