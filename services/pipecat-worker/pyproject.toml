@@ -1,0 +1,19 @@
+[project]
+name = "pipecat-worker"
+version = "0.0.0"
+requires-python = ">=3.12"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0",
+  "ruff>=0.6",
+  "mypy>=1.11",
+]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[build-system]
+requires = ["setuptools>=69"]
+build-backend = "setuptools.build_meta"
