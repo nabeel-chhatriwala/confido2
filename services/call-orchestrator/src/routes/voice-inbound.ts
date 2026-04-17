@@ -83,9 +83,10 @@ export async function registerVoiceInboundRoute(app: FastifyInstance): Promise<v
       config.internalSvcToken,
       120,
     );
-    const wsUrl = `${config.workerWsUrl}?token=${encodeURIComponent(token)}`;
 
     reply.type('application/xml');
-    return reply.send(connectStreamTwiml(wsUrl));
+    // Twilio Media Streams strips query params off the WS URL; pass the token
+    // as a <Parameter> so it arrives in the `start` event's customParameters.
+    return reply.send(connectStreamTwiml(config.workerWsUrl, { token }));
   });
 }

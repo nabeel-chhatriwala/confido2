@@ -1,4 +1,7 @@
 from __future__ import annotations
+import json as _json
+from datetime import datetime, timezone
+
 import structlog
 from fastapi import WebSocket, WebSocketDisconnect
 
@@ -25,7 +28,41 @@ log = structlog.get_logger()
 
 
 async def handle_ws(ws: WebSocket, cfg: Config) -> None:
-    token = ws.query_params.get("token", "")
+    """Twilio Media Streams WS handler.
+
+    Twilio opens the WS without passing URL query parameters; the token is passed
+    as a <Parameter> in the <Stream> TwiML element, which arrives in the `start`
+    event under `start.customParameters.token`.
+    """
+    await ws.accept()
+
+    # Twilio sends: {"event":"connected"}, then {"event":"start", "start":{...}}
+    stream_sid = ""
+    call_sid_from_twilio = ""
+    token = ""
+    try:
+        # Loop until we see the start event (at most a few frames in).
+        for _ in range(5):
+            msg = await ws.receive_text()
+            evt = _json.loads(msg)
+            if evt.get("event") == "start":
+                stream_sid = evt["start"].get("streamSid", "")
+                call_sid_from_twilio = evt["start"].get("callSid", "")
+                token = (evt["start"].get("customParameters") or {}).get("token", "")
+                break
+    except Exception as e:
+        log.warning("start_frame_parse_failed", err=str(e))
+        await ws.close(code=4400)
+        return
+
+    log.info(
+        "ws_start",
+        stream_sid=stream_sid,
+        call_sid=call_sid_from_twilio,
+        token_len=len(token),
+        token_dots=token.count("."),
+    )
+
     try:
         payload = verify_session_token(token, cfg.internal_svc_token)
     except TokenInvalid as e:
@@ -60,25 +97,6 @@ async def handle_ws(ws: WebSocket, cfg: Config) -> None:
         await ws.close(code=4500)
         return
 
-    await ws.accept()
-
-    # Accept the first Twilio Media Streams message to extract streamSid + callSid.
-    # Twilio sends: {"event": "connected"}, then {"event": "start", "start": {"streamSid": "...", "callSid": "..."}}
-    import json as _json
-    stream_sid = ""
-    call_sid_from_twilio = ""
-    try:
-        first = await ws.receive_text()
-        evt = _json.loads(first)
-        if evt.get("event") == "connected":
-            second = await ws.receive_text()
-            evt = _json.loads(second)
-        if evt.get("event") == "start":
-            stream_sid = evt["start"]["streamSid"]
-            call_sid_from_twilio = evt["start"].get("callSid", "")
-    except Exception as e:
-        log.warning("start_frame_parse_failed", err=str(e))
-
     serializer = TwilioFrameSerializer(
         stream_sid=stream_sid,
         call_sid=call_sid_from_twilio,
@@ -96,7 +114,6 @@ async def handle_ws(ws: WebSocket, cfg: Config) -> None:
     context = LLMContext(messages=[{"role": "system", "content": built.system_prompt}])
     agg = LLMContextAggregatorPair(context)
 
-    # Transcript buffers (appended as TranscriptCapture sees final user/assistant text).
     user_turns: list[str] = []
     assistant_turns: list[str] = []
 
@@ -127,12 +144,13 @@ async def handle_ws(ws: WebSocket, cfg: Config) -> None:
 
     end_reason = "caller_hangup"
 
-    # Kick off with the agent's greeting.
     if built.first_message:
         import asyncio
-        async def _speak_first():
+
+        async def _speak_first() -> None:
             await asyncio.sleep(0.3)
             await task.queue_frames([TTSSpeakFrame(text=built.first_message)])
+
         asyncio.create_task(_speak_first())
 
     try:
@@ -152,7 +170,6 @@ async def handle_ws(ws: WebSocket, cfg: Config) -> None:
             ],
             "text": " ".join(user_turns + assistant_turns),
         }
-        from datetime import datetime, timezone
         now_iso = datetime.now(timezone.utc).isoformat()
         for _ in range(3):
             try:

@@ -4,7 +4,7 @@ from typing import Any
 
 from pipecat.services.deepgram.stt import DeepgramSTTService
 from pipecat.services.openai.llm import OpenAILLMService
-from pipecat.services.elevenlabs.tts import ElevenLabsTTSService
+from pipecat.services.cartesia.tts import CartesiaTTSService
 
 
 @dataclass(frozen=True)
@@ -17,13 +17,13 @@ class Built:
 
 
 def build_pipeline_single_stack(snapshot: dict[str, Any], creds: dict[str, str]) -> Built:
-    """Plan B: hardcoded Deepgram / OpenAI / ElevenLabs. Plan C introduces the registry."""
+    """Plan B: hardcoded Deepgram / OpenAI / Cartesia. Plan C introduces the registry."""
     if snapshot.get("stt_provider") != "deepgram":
         raise ValueError("Plan B only supports deepgram STT")
     if snapshot.get("llm_provider") != "openai":
         raise ValueError("Plan B only supports openai LLM")
-    if snapshot.get("tts_provider") != "elevenlabs":
-        raise ValueError("Plan B only supports elevenlabs TTS")
+    if snapshot.get("tts_provider") != "cartesia":
+        raise ValueError("Plan B only supports cartesia TTS")
 
     stt = DeepgramSTTService(
         api_key=creds["deepgram"],
@@ -33,9 +33,11 @@ def build_pipeline_single_stack(snapshot: dict[str, Any], creds: dict[str, str])
         api_key=creds["openai"],
         model=(snapshot.get("llm_config") or {}).get("model", "gpt-4o-mini"),
     )
-    tts = ElevenLabsTTSService(
-        api_key=creds["elevenlabs"],
-        voice_id=(snapshot.get("tts_config") or {})["voice_id"],
+    tts_config = snapshot.get("tts_config") or {}
+    tts = CartesiaTTSService(
+        api_key=creds["cartesia"],
+        voice_id=tts_config["voice_id"],
+        model=tts_config.get("model", "sonic-2"),
     )
     return Built(
         stt=stt,

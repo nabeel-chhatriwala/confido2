@@ -8,7 +8,7 @@ REQUIRED = [
     "INTERNAL_SVC_TOKEN",
     "PROVIDER_KEY_DEEPGRAM",
     "PROVIDER_KEY_OPENAI",
-    "PROVIDER_KEY_ELEVENLABS",
+    "PROVIDER_KEY_CARTESIA",
 ]
 
 
@@ -33,7 +33,7 @@ class Config:
             provider_keys={
                 "deepgram": os.environ["PROVIDER_KEY_DEEPGRAM"],
                 "openai": os.environ["PROVIDER_KEY_OPENAI"],
-                "elevenlabs": os.environ["PROVIDER_KEY_ELEVENLABS"],
+                "cartesia": os.environ["PROVIDER_KEY_CARTESIA"],
             },
             host=os.environ.get("HOST", "0.0.0.0"),
             port=int(os.environ.get("PORT", "8080")),
